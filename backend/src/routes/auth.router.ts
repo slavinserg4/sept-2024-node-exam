@@ -13,5 +13,15 @@ router.post(
 );
 
 router.post("/sign-in", authController.signIn);
+router.post(
+    "/recovery",
+    commonMiddleware.validateBody(UserValidator.emailSchema),
+    authController.recoveryRequest,
+);
+router.post(
+    "/recovery/:token",
+    commonMiddleware.validateBody(UserValidator.passwordSchema),
+    authController.recoveryPassword,
+);
 
 export const authRouter = router;

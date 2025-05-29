@@ -14,4 +14,10 @@ export class UserValidator {
         name: this.name.required(),
         surname: this.surname.required(),
     });
+    public static emailSchema = joi.object({
+        email: this.email.required(),
+    });
+    public static passwordSchema = joi.object({
+        password: this.password.required(),
+    });
 }

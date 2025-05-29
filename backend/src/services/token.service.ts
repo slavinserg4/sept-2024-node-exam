@@ -49,7 +49,23 @@ class TokenService {
             throw new ApiError("Invalid token", StatusCodesEnum.UNAUTHORIZED);
         }
     }
+    public generateActionToken(
+        payload: ITokenPayload,
+        type: TokenTypeEnum,
+    ): string {
+        let secret: string;
+        let expiresIn: any;
 
+        switch (type) {
+            case TokenTypeEnum.RECOVERY:
+                secret = config.JWT_RECOVERY_SECRET;
+                expiresIn = config.JWT_RECOVERY_LIFETIME;
+                break;
+            default:
+                throw new ApiError("Invalid action token type", 400);
+        }
+        return jwt.sign(payload, secret, { expiresIn });
+    }
     public async isTokenExists(
         token: string,
         type: TokenTypeEnum,

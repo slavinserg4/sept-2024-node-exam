@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 
 import { StatusCodesEnum } from "../enums/status-codes.enum";
-import { IAuth } from "../interfaces/auth.interface";
+import { IAuth, IRecovery } from "../interfaces/auth.interface";
 import { IUserCreateDTO } from "../interfaces/user.interface";
 import { authService } from "../services/autn.service";
 
@@ -20,6 +20,35 @@ class AuthController {
             const body = req.body as IAuth;
             const data = await authService.signIn(body);
             res.status(StatusCodesEnum.OK).json(data);
+        } catch (e) {
+            next(e);
+        }
+    }
+    public async recoveryRequest(
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ) {
+        try {
+            const dto = req.body as IRecovery;
+            await authService.recoveryPasswordRequest(dto);
+            res.status(StatusCodesEnum.OK).json({
+                details: "Check your email",
+            });
+        } catch (e) {
+            next(e);
+        }
+    }
+    public async recoveryPassword(
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ) {
+        try {
+            const { token } = req.params as { token: string };
+            const { password } = req.body;
+            const user = await authService.recoveryPassword(token, password);
+            res.status(StatusCodesEnum.OK).json(user);
         } catch (e) {
             next(e);
         }

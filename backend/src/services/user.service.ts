@@ -1,5 +1,6 @@
 import { StatusCodesEnum } from "../enums/status-codes.enum";
 import { ApiError } from "../errors/api.error";
+import { IUser } from "../interfaces/user.interface";
 import { userRepository } from "../repositories/user.repository";
 
 class UserService {
@@ -17,6 +18,16 @@ class UserService {
         const user = await userRepository.getById(userId);
         if (user.role !== "admin")
             throw new ApiError("User is not admin", StatusCodesEnum.FORBIDDEN);
+    }
+    public async updateById(
+        userId: string,
+        user: Partial<IUser>,
+    ): Promise<IUser> {
+        const data = userRepository.getById(userId);
+        if (!data) {
+            throw new ApiError("User not found", StatusCodesEnum.NOT_FOUND);
+        }
+        return await userRepository.updateById(userId, user);
     }
 }
 export const userService = new UserService();
