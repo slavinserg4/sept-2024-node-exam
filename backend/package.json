@@ -8,7 +8,6 @@
     "watch:server": "tsx src/main.ts --watch"
   },
   "dependencies": {
-
     "express": "^4.21.2",
     "mongoose": "^8.12.1",
     "joi": "^17.13.3",
