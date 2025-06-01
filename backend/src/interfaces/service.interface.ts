@@ -1,10 +1,12 @@
 import { IBase } from "./base.interface";
+import { IClinic } from "./clinic.interface";
+import { IDoctor } from "./doctor.interface";
 
 export interface IService extends IBase {
     _id: string;
     name: string;
-    doctorId?: string[];
-    clinicId?: string[];
+    doctorId?: IDoctor[] | string[];
+    clinicId?: IClinic[] | string[];
 }
 
 export interface IServiceCreate {

@@ -2,14 +2,31 @@ import { IDoctor, IDoctorDTO } from "../interfaces/doctor.interface";
 import { Doctor } from "../models/doctor.model";
 
 class DoctorRepository {
+    private readonly defaultPopulate = {
+        doctorSelect: "firstName lastName clinics services",
+        clinicPopulate: {
+            path: "clinics",
+            select: "_id name",
+        },
+        servicePopulate: {
+            path: "services",
+            select: "_id name",
+        },
+    };
+
     public getAllDoctors(): Promise<IDoctor[]> {
-        return Doctor.find().populate("clinics").populate("services").exec();
+        return Doctor.find()
+            .select(this.defaultPopulate.doctorSelect)
+            .populate(this.defaultPopulate.clinicPopulate)
+            .populate(this.defaultPopulate.servicePopulate)
+            .exec();
     }
 
     public getDoctorById(id: string): Promise<IDoctor> {
         return Doctor.findById(id)
-            .populate("clinics")
-            .populate("services")
+            .select(this.defaultPopulate.doctorSelect)
+            .populate(this.defaultPopulate.clinicPopulate)
+            .populate(this.defaultPopulate.servicePopulate)
             .exec();
     }
 
@@ -19,16 +36,19 @@ class DoctorRepository {
 
     public getDoctorsByClinic(clinicId: string): Promise<IDoctor[]> {
         return Doctor.find({ clinics: clinicId })
-            .populate("clinics")
-            .populate("services")
+            .select(this.defaultPopulate.doctorSelect)
+            .populate(this.defaultPopulate.clinicPopulate)
+            .populate(this.defaultPopulate.servicePopulate)
             .exec();
     }
 
     public getDoctorsByService(serviceId: string): Promise<IDoctor[]> {
         return Doctor.find({ services: serviceId })
-            .populate("clinics")
-            .populate("services")
+            .select(this.defaultPopulate.doctorSelect)
+            .populate(this.defaultPopulate.clinicPopulate)
+            .populate(this.defaultPopulate.servicePopulate)
             .exec();
     }
 }
+
 export const doctorRepository = new DoctorRepository();
