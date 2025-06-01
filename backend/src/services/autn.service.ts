@@ -3,7 +3,7 @@ import { EmailEnum } from "../enums/email.enum";
 import { StatusCodesEnum } from "../enums/status-codes.enum";
 import { TokenTypeEnum } from "../enums/toket-type.enum";
 import { ApiError } from "../errors/api.error";
-import { IAuth, IRecovery } from "../interfaces/auth.interface";
+import { IAuth } from "../interfaces/auth.interface";
 import { ITokenPair } from "../interfaces/token.interface";
 import { IUser, IUserCreateDTO } from "../interfaces/user.interface";
 import { tokenRepository } from "../repositories/token.repository";
@@ -53,8 +53,8 @@ class AuthService {
         await tokenRepository.create({ ...tokens, _userId: user._id });
         return { user, tokens };
     }
-    public async recoveryPasswordRequest(dto: IRecovery): Promise<void> {
-        const user = await userRepository.getByEmail(dto.email);
+    public async recoveryPasswordRequest(email: string): Promise<void> {
+        const user = await userRepository.getByEmail(email);
         if (!user) {
             throw new ApiError(
                 "Unable to perform password recovery",

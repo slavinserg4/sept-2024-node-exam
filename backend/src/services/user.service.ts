@@ -14,10 +14,10 @@ class UserService {
             );
         }
     }
-    public async isUserAdmin(userId: string): Promise<void> {
-        const user = await userRepository.getById(userId);
-        if (user.role !== "admin")
+    public async isUserAdmin(role: string): Promise<void> {
+        if (role !== "admin") {
             throw new ApiError("User is not admin", StatusCodesEnum.FORBIDDEN);
+        }
     }
     public async updateById(
         userId: string,

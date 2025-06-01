@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 
 import { StatusCodesEnum } from "../enums/status-codes.enum";
-import { IAuth, IRecovery } from "../interfaces/auth.interface";
+import { IAuth } from "../interfaces/auth.interface";
 import { IUserCreateDTO } from "../interfaces/user.interface";
 import { authService } from "../services/autn.service";
 
@@ -30,8 +30,8 @@ class AuthController {
         next: NextFunction,
     ) {
         try {
-            const dto = req.body as IRecovery;
-            await authService.recoveryPasswordRequest(dto);
+            const { email } = req.body;
+            await authService.recoveryPasswordRequest(email);
             res.status(StatusCodesEnum.OK).json({
                 details: "Check your email",
             });
