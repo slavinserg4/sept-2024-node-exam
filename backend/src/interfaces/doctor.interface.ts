@@ -15,3 +15,7 @@ export type IDoctorDTO = {
     clinics: string | string[];
     services: string | string[];
 };
+export interface IUpdateDoctorDTO extends Partial<IDoctorDTO> {
+    clinics?: string | string[];
+    services?: string | string[];
+}

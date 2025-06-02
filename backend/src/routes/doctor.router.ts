@@ -21,4 +21,10 @@ router.post(
     authMiddleware.IsUserAdmin,
     doctorController.createDoctor,
 );
+router.patch(
+    "/:id",
+    authMiddleware.checkAccessToken,
+    authMiddleware.IsUserAdmin,
+    doctorController.updateDoctorById,
+);
 export const doctorRouter = router;

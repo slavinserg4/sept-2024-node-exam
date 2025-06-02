@@ -1,4 +1,8 @@
-import { IDoctor, IDoctorDTO } from "../interfaces/doctor.interface";
+import {
+    IDoctor,
+    IDoctorDTO,
+    IUpdateDoctorDTO,
+} from "../interfaces/doctor.interface";
 import { Doctor } from "../models/doctor.model";
 
 class DoctorRepository {
@@ -33,17 +37,11 @@ class DoctorRepository {
     public createDoctor(doctor: IDoctorDTO): Promise<IDoctor> {
         return Doctor.create(doctor);
     }
-
-    public getDoctorsByClinic(clinicId: string): Promise<IDoctor[]> {
-        return Doctor.find({ clinics: clinicId })
-            .select(this.defaultPopulate.doctorSelect)
-            .populate(this.defaultPopulate.clinicPopulate)
-            .populate(this.defaultPopulate.servicePopulate)
-            .exec();
-    }
-
-    public getDoctorsByService(serviceId: string): Promise<IDoctor[]> {
-        return Doctor.find({ services: serviceId })
+    public updateDoctorById(
+        id: string,
+        dto: IUpdateDoctorDTO,
+    ): Promise<IDoctor> {
+        return Doctor.findByIdAndUpdate(id, dto, { new: true })
             .select(this.defaultPopulate.doctorSelect)
             .populate(this.defaultPopulate.clinicPopulate)
             .populate(this.defaultPopulate.servicePopulate)

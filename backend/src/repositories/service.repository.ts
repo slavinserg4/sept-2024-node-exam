@@ -14,26 +14,34 @@ class ServiceRepository {
         },
     };
 
-    private getBaseQuery(query: any) {
-        return query
+    private getBaseQuery(query: any, sortDirection?: string) {
+        const baseQuery = query
             .select(this.defaultSelect.select)
             .populate(this.defaultSelect.clinicPopulate)
             .populate(this.defaultSelect.doctorPopulate);
+        if (sortDirection) {
+            baseQuery.sort({ name: sortDirection === "asc" ? 1 : -1 });
+        }
+        return baseQuery;
     }
 
-    public async getAllServices(): Promise<IService[]> {
-        return this.getBaseQuery(Service.find()).exec();
+    public async getAllServices(sortDirection?: string): Promise<IService[]> {
+        return this.getBaseQuery(Service.find(), sortDirection).exec();
     }
 
     public async getServiceById(id: string): Promise<IService> {
         return this.getBaseQuery(Service.findById(id)).exec();
     }
 
-    public async getServiceByName(name: string): Promise<IService> {
+    public async getServiceByName(
+        name: string,
+        sortDirection?: string,
+    ): Promise<IService[]> {
         return this.getBaseQuery(
-            Service.findOne({
-                name: { $regex: new RegExp("^" + name + "$", "i") },
+            Service.find({
+                name: { $regex: name, $options: "i" },
             }),
+            sortDirection,
         ).exec();
     }
 

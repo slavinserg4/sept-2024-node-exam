@@ -11,7 +11,8 @@ class ServiceController {
         next: NextFunction,
     ) {
         try {
-            const services = await serviceService.getAllServices();
+            const sortDirection = req.query.sort as string;
+            const services = await serviceService.getAllServices(sortDirection);
             res.status(StatusCodesEnum.OK).json(services);
         } catch (e) {
             next(e);
@@ -39,6 +40,23 @@ class ServiceController {
             const body = req.body as IServiceDTO;
             const service = await serviceService.createService(body);
             res.status(StatusCodesEnum.CREATED).json(service);
+        } catch (e) {
+            next(e);
+        }
+    }
+    public async getServiceByName(
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ) {
+        try {
+            const sortDirection = req.query.sort as string;
+            const { name } = req.query;
+            const service = await serviceService.getServicesByName(
+                name as string,
+                sortDirection,
+            );
+            res.status(StatusCodesEnum.OK).json(service);
         } catch (e) {
             next(e);
         }

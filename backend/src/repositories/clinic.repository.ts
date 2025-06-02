@@ -42,6 +42,16 @@ class ClinicRepository {
             Clinic.findOne({ name: { $regex: new RegExp(name, "i") } }),
         ).exec();
     }
+    public async getClinicByExactName(name: string): Promise<IClinic> {
+        return this.getBaseQuery(
+            Clinic.findOne({
+                name: {
+                    $regex: `^${name}$`,
+                    $options: "i",
+                },
+            }),
+        ).exec();
+    }
 
     public async createClinic(clinic: IClinicDTO): Promise<IClinic> {
         const createdClinic = await Clinic.create(clinic);
