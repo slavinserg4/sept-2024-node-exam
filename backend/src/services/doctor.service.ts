@@ -91,7 +91,6 @@ class DoctorService {
     ): Promise<IDoctor> {
         const existingDoctor = await this.getDoctorById(id);
 
-        // Обробка клінік
         let updatedClinics = [...existingDoctor.clinics];
         if (dto.clinics) {
             const clinicsToAdd = Array.isArray(dto.clinics)
@@ -112,8 +111,6 @@ class DoctorService {
                 typeof clinic === "string" ? clinic : clinic._id.toString(),
             );
         }
-
-        // Обробка сервісів
         let updatedServices = [...existingDoctor.services];
         if (dto.services) {
             const servicesToAdd = Array.isArray(dto.services)
@@ -139,21 +136,18 @@ class DoctorService {
             );
         }
 
-        // Оновлюємо зв'язки з клініками
         await clinicService.updateClinics(
             updatedClinics as string[],
             updatedServices as string[],
             existingDoctor,
         );
 
-        // Оновлюємо зв'язки з сервісами
         await serviceService.updateServices(
             updatedServices as string[],
             updatedClinics as string[],
             existingDoctor,
         );
 
-        // Оновлюємо дані лікаря
         const updateData: IUpdateDoctorDTO = {
             ...(dto.firstName && { firstName: dto.firstName }),
             ...(dto.lastName && { lastName: dto.lastName }),
@@ -207,7 +201,8 @@ class DoctorService {
         }
         return doctors;
     }
-    public async deleteDoctorById(id: string) {
+    public async deleteDoctorById(id: string): Promise<void> {
+        await this.getDoctorById(id);
         return await doctorRepository.deleteDoctorById(id);
     }
 }

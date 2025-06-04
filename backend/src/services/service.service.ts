@@ -1,3 +1,5 @@
+import { StatusCodesEnum } from "../enums/status-codes.enum";
+import { ApiError } from "../errors/api.error";
 import { IDoctor } from "../interfaces/doctor.interface";
 import { IService, IServiceDTO } from "../interfaces/service.interface";
 import { serviceRepository } from "../repositories/service.repository";
@@ -71,14 +73,24 @@ class ServiceService {
         );
     }
 
-    public async getAllServices(sortDirection?: string) {
+    public async getAllServices(sortDirection?: string): Promise<IService[]> {
         return await serviceRepository.getAllServices(sortDirection);
     }
-    public async createService(service: IServiceDTO) {
+    public async createService(service: IServiceDTO): Promise<IService> {
+        const foundedService = await this.getServicesByName(service.name);
+        if (foundedService.length)
+            throw new ApiError(
+                "Service is already exists",
+                StatusCodesEnum.BED_REQUEST,
+            );
         return await serviceRepository.createService(service);
     }
-    public async getServiceById(id: string) {
-        return await serviceRepository.getServiceById(id);
+    public async getServiceById(id: string): Promise<IService> {
+        const service = await serviceRepository.getServiceById(id);
+        if (!service) {
+            throw new ApiError("Service not found", StatusCodesEnum.NOT_FOUND);
+        }
+        return service;
     }
     public async getServicesByName(
         name: string,
@@ -86,19 +98,27 @@ class ServiceService {
     ): Promise<IService[]> {
         return await serviceRepository.getServiceByName(name, sortDirection);
     }
-    public async getExactServiceByName(name: string): Promise<IService | null> {
-        const services = await serviceRepository.getServiceByName(name);
-        return (
-            services.find(
-                (service) => service.name.toLowerCase() === name.toLowerCase(),
-            ) || null
-        );
+    public async getServicesByNameOnController(
+        name: string,
+        sortDirection?: string,
+    ): Promise<IService[]> {
+        const services = await this.getServicesByName(name, sortDirection);
+        if (!services.length) {
+            throw new ApiError("Service not found", StatusCodesEnum.NOT_FOUND);
+        }
+        return services;
     }
-
-    public async updateServiceById(id: string, dto: IServiceDTO) {
+    public async updateServiceById(
+        id: string,
+        dto: IServiceDTO,
+    ): Promise<IService> {
         return await serviceRepository.updateServiceById(id, dto);
     }
-    public async deleteServiceById(id: string) {
+    public async deleteServiceById(id: string): Promise<void> {
+        const service = await this.getServiceById(id);
+        if (!service) {
+            throw new ApiError("Service not found", StatusCodesEnum.NOT_FOUND);
+        }
         return await serviceRepository.deleteServiceById(id);
     }
 }

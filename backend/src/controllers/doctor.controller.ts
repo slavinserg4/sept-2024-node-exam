@@ -20,8 +20,6 @@ class DoctorController {
             const sortDirection = req.query.sortDirection as string;
             const { firstName, lastName, phone, email } =
                 req.query as IDoctorFind;
-
-            // Якщо є параметри пошуку, використовуємо searchDoctor
             if (firstName || lastName || phone || email) {
                 const searchParams: IDoctorFind = {
                     ...(firstName && { firstName: firstName as string }),
@@ -36,8 +34,6 @@ class DoctorController {
                 );
                 return res.status(StatusCodesEnum.OK).json(doctors);
             }
-
-            // Якщо параметрів пошуку немає, отримуємо всіх лікарів
             const doctors = await doctorService.getAllDoctors(
                 sortField,
                 sortDirection,

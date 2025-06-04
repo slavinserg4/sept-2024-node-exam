@@ -64,7 +64,7 @@ class ClinicService {
         );
     }
 
-    public async createClinic(clinic: IClinicDTO) {
+    public async createClinic(clinic: IClinicDTO): Promise<IClinic> {
         const createdClinic = await clinicRepository.getClinicByExactName(
             clinic.name,
         );
@@ -76,27 +76,39 @@ class ClinicService {
         }
         return await clinicRepository.createClinic(clinic);
     }
-    public async getClinicByName(name: string) {
+    public async getClinicByName(name: string): Promise<IClinic> {
         return await clinicRepository.getClinicByName(name);
     }
-    public async getClinicById(id: string) {
-        return await clinicRepository.getClinicById(id);
+    public async getClinicById(id: string): Promise<IClinic> {
+        const clinic = await clinicRepository.getClinicById(id);
+        if (!clinic) {
+            throw new ApiError("Clinic not found", StatusCodesEnum.NOT_FOUND);
+        }
+        return clinic;
     }
     public async getAllClinics(filter?: IClinicFilter): Promise<IClinic[]> {
-        if (filter?.clinicName) {
-            return await clinicRepository.getClinicsByNames(
-                filter.clinicName,
-                filter.sortDirection,
-            );
+        const clinics = await clinicRepository.getAllClinics(filter);
+        if (!clinics.length) {
+            throw new ApiError("No clinics found", StatusCodesEnum.NOT_FOUND);
         }
-        return await clinicRepository.getAllClinics(filter);
+        return clinics;
     }
-    public async updateClinicById(id: string, dto: IClinicUpdateDTO) {
+    public async updateClinicById(
+        id: string,
+        dto: IClinicUpdateDTO,
+    ): Promise<IClinic> {
         return await clinicRepository.updateClinicById(id, dto);
     }
-    public async deleteClinicById(id: string) {
+    public async deleteClinicById(id: string): Promise<void> {
         try {
-            return await clinicRepository.deleteClinicById(id);
+            const clinic = await this.getClinicById(id);
+            if (!clinic) {
+                throw new ApiError(
+                    "Clinic not found",
+                    StatusCodesEnum.NOT_FOUND,
+                );
+            }
+            await clinicRepository.deleteClinicById(id);
         } catch {
             throw new ApiError(
                 "Failed to delete clinic",

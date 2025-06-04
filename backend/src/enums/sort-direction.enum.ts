@@ -1,4 +1,8 @@
 export enum SortDirectionEnum {
-    ASC = "ASC",
-    DESC = "DESC",
+    ASC = "asc",
+    DESC = "desc",
+}
+export enum SortFieldEnum {
+    FIRST_NAME = "firstName",
+    LAST_NAME = "lastName",
 }

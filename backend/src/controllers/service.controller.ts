@@ -52,7 +52,7 @@ class ServiceController {
         try {
             const sortDirection = req.query.sort as string;
             const { name } = req.query;
-            const service = await serviceService.getServicesByName(
+            const service = await serviceService.getServicesByNameOnController(
                 name as string,
                 sortDirection,
             );

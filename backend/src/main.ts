@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 
-import express, { Request, Response } from "express";
+import express, { NextFunction, Request, Response } from "express";
 import * as mongoose from "mongoose";
 
 import { config } from "./config/config";
@@ -14,11 +14,14 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/", apiRouter);
 
-app.use("*", (err: ApiError, req: Request, res: Response) => {
-    const status = err.status || 500;
-    const message = err.message ?? "Something went wrong";
-    res.status(status).json({ status, message });
-});
+app.use(
+    "*",
+    (err: ApiError, req: Request, res: Response, next: NextFunction) => {
+        const status = err.status || 500;
+        const message = err.message ?? "Something went wrong";
+        res.status(status).json({ status, message });
+    },
+);
 process.on("uncaughtException", (err) => {
     console.log("uncaughtException", err);
     process.exit(1);

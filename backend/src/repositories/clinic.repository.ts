@@ -24,7 +24,6 @@ class ClinicRepository {
     };
 
     private getBaseQuery(query: any, filter?: IClinicFilter) {
-        // Перевіряємо чи filter існує
         const servicesPopulate = {
             ...this.defaultSelect.servicesPopulate,
             match: filter?.serviceName
@@ -66,32 +65,32 @@ class ClinicRepository {
         return baseQuery;
     }
 
-    public getAllClinics(filter?: IClinicFilter): Promise<IClinic[]> {
-        const query = Clinic.find();
+    public async getAllClinics(filter?: IClinicFilter): Promise<IClinic[]> {
+        let query = Clinic.find();
 
-        // Якщо шукаємо за назвою послуги
-        if (filter?.serviceName) {
-            query.populate({
-                path: "services",
-                match: { name: { $regex: filter.serviceName, $options: "i" } },
+        if (filter?.clinicName) {
+            query = query.where("name", {
+                $regex: filter.clinicName,
+                $options: "i",
             });
         }
+        let results = await this.getBaseQuery(query, filter).exec();
 
-        const clinics = this.getBaseQuery(query, filter).exec();
-
-        // Фільтруємо клініки, які мають відповідні послуги
+        // Фільтрація за сервісами
         if (filter?.serviceName) {
-            return clinics.filter(
+            results = results.filter(
                 (clinic: IClinic) => clinic.services.length > 0,
             );
         }
+
+        // Фільтрація за лікарями
         if (filter?.doctorName) {
-            return clinics.filter(
+            results = results.filter(
                 (clinic: IClinic) => clinic.doctors.length > 0,
             );
         }
 
-        return clinics;
+        return results;
     }
 
     public getClinicById(id: string): Promise<IClinic> {
