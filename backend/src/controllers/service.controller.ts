@@ -61,5 +61,18 @@ class ServiceController {
             next(e);
         }
     }
+    public async deleteServiceById(
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ) {
+        try {
+            const { id } = req.params;
+            await serviceService.deleteServiceById(id);
+            res.status(StatusCodesEnum.NO_CONTENT).send();
+        } catch (e) {
+            next(e);
+        }
+    }
 }
 export const serviceController = new ServiceController();

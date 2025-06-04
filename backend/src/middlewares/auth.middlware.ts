@@ -3,7 +3,7 @@ import { NextFunction, Request, Response } from "express";
 import { StatusCodesEnum } from "../enums/status-codes.enum";
 import { TokenTypeEnum } from "../enums/toket-type.enum";
 import { ApiError } from "../errors/api.error";
-import { ITokenPayload } from "../interfaces/token.interface";
+import { IRefresh, ITokenPayload } from "../interfaces/token.interface";
 import { tokenService } from "../services/token.service";
 import { userService } from "../services/user.service";
 
@@ -43,6 +43,40 @@ class AuthMiddleware {
                 );
             }
             res.locals.tokenPayload = tokenPayload;
+            next();
+        } catch (e) {
+            next(e);
+        }
+    }
+    public async checkRefreshToken(
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ) {
+        try {
+            const { refreshToken } = req.body as IRefresh;
+
+            if (!refreshToken) {
+                throw new ApiError(
+                    "No refresh token provided",
+                    StatusCodesEnum.FORBIDDEN,
+                );
+            }
+            const tokenPayload = tokenService.verifyToken(
+                refreshToken,
+                TokenTypeEnum.REFRESH,
+            );
+            const isTokenExists = await tokenService.isTokenExists(
+                refreshToken,
+                TokenTypeEnum.REFRESH,
+            );
+
+            if (!isTokenExists) {
+                throw new ApiError("Invalid token", StatusCodesEnum.FORBIDDEN);
+            }
+
+            req.res.locals.tokenPayload = tokenPayload;
+
             next();
         } catch (e) {
             next(e);

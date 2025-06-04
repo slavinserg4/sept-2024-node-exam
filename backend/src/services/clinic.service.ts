@@ -3,6 +3,7 @@ import { ApiError } from "../errors/api.error";
 import {
     IClinic,
     IClinicDTO,
+    IClinicFilter,
     IClinicUpdateDTO,
 } from "../interfaces/clinic.interface";
 import { IDoctor } from "../interfaces/doctor.interface";
@@ -81,11 +82,27 @@ class ClinicService {
     public async getClinicById(id: string) {
         return await clinicRepository.getClinicById(id);
     }
-    public async getAllClinics(): Promise<IClinic[]> {
-        return await clinicRepository.getAllClinics();
+    public async getAllClinics(filter?: IClinicFilter): Promise<IClinic[]> {
+        if (filter?.clinicName) {
+            return await clinicRepository.getClinicsByNames(
+                filter.clinicName,
+                filter.sortDirection,
+            );
+        }
+        return await clinicRepository.getAllClinics(filter);
     }
     public async updateClinicById(id: string, dto: IClinicUpdateDTO) {
         return await clinicRepository.updateClinicById(id, dto);
+    }
+    public async deleteClinicById(id: string) {
+        try {
+            return await clinicRepository.deleteClinicById(id);
+        } catch {
+            throw new ApiError(
+                "Failed to delete clinic",
+                StatusCodesEnum.NOT_FOUND,
+            );
+        }
     }
 }
 export const clinicService = new ClinicService();

@@ -98,5 +98,8 @@ class ServiceService {
     public async updateServiceById(id: string, dto: IServiceDTO) {
         return await serviceRepository.updateServiceById(id, dto);
     }
+    public async deleteServiceById(id: string) {
+        return await serviceRepository.deleteServiceById(id);
+    }
 }
 export const serviceService = new ServiceService();

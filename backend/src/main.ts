@@ -4,6 +4,7 @@ import express, { NextFunction, Request, Response } from "express";
 import * as mongoose from "mongoose";
 
 import { config } from "./config/config";
+import { cronRunner } from "./crons";
 import { ApiError } from "./errors/api.error";
 import { apiRouter } from "./routes/api.router";
 
@@ -13,14 +14,11 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/", apiRouter);
 
-app.use(
-    "*",
-    (err: ApiError, req: Request, res: Response, next: NextFunction) => {
-        const status = err.status || 500;
-        const message = err.message ?? "Something went wrong";
-        res.status(status).json({ status, message });
-    },
-);
+app.use("*", (err: ApiError, req: Request, res: Response) => {
+    const status = err.status || 500;
+    const message = err.message ?? "Something went wrong";
+    res.status(status).json({ status, message });
+});
 process.on("uncaughtException", (err) => {
     console.log("uncaughtException", err);
     process.exit(1);
@@ -47,6 +45,7 @@ const start = async () => {
         await dbConnection();
         app.listen(config.PORT, async () => {
             console.log(`Server listening on ${config.PORT}`);
+            await cronRunner();
         });
     } catch (e) {
         console.log(e);

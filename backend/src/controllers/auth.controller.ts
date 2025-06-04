@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 
 import { StatusCodesEnum } from "../enums/status-codes.enum";
 import { IAuth } from "../interfaces/auth.interface";
+import { ITokenPayload } from "../interfaces/token.interface";
 import { IUserCreateDTO } from "../interfaces/user.interface";
 import { authService } from "../services/autn.service";
 
@@ -49,6 +50,15 @@ class AuthController {
             const { password } = req.body;
             const user = await authService.recoveryPassword(token, password);
             res.status(StatusCodesEnum.OK).json(user);
+        } catch (e) {
+            next(e);
+        }
+    }
+    public async refresh(req: Request, res: Response, next: NextFunction) {
+        try {
+            const payload = req.res.locals.tokenPayload as ITokenPayload;
+            const tokens = await authService.refresh(payload);
+            res.status(StatusCodesEnum.OK).json(tokens);
         } catch (e) {
             next(e);
         }

@@ -14,5 +14,11 @@ router.post(
     authMiddleware.IsUserAdmin,
     serviceController.createService,
 );
+router.delete(
+    "/:id",
+    authMiddleware.checkAccessToken,
+    authMiddleware.IsUserAdmin,
+    serviceController.deleteServiceById,
+);
 
 export const serviceRouter = router;

@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import { authController } from "../controllers/auth.controller";
+import { authMiddleware } from "../middlewares/auth.middlware";
 import { commonMiddleware } from "../middlewares/commonMiddleware";
 import { UserValidator } from "../validators/user.validator";
 
@@ -22,6 +23,11 @@ router.post(
     "/recovery/:token",
     commonMiddleware.validateBody(UserValidator.passwordSchema),
     authController.recoveryPassword,
+);
+router.post(
+    "/refresh",
+    authMiddleware.checkRefreshToken,
+    authController.refresh,
 );
 
 export const authRouter = router;

@@ -1,8 +1,21 @@
-import { IToken, ITokenModel } from "../interfaces/token.interface";
+import {
+    IToken,
+    ITokenModel,
+    ITokenModelWithDoctor,
+} from "../interfaces/token.interface";
 import { Token } from "../models/token.model";
 
 class TokenRepository {
-    public create(tokenModel: ITokenModel): Promise<IToken> {
+    public create(
+        tokenModel: ITokenModel | ITokenModelWithDoctor,
+    ): Promise<IToken> {
+        const hasUserId = "_userId" in tokenModel;
+        const hasDoctorId = "_doctorId" in tokenModel;
+
+        if (!hasUserId && !hasDoctorId) {
+            throw new Error("Either _userId or _doctorId must be provided");
+        }
+
         return Token.create(tokenModel);
     }
 

@@ -13,6 +13,12 @@ export interface IClinicDTO {
     services?: string[];
     doctors?: string[];
 }
+export interface IClinicFilter {
+    clinicName?: string;
+    serviceName?: string;
+    doctorName?: string;
+    sortDirection?: string;
+}
 
 export type IClinicUpdateDTO = {
     name?: string;

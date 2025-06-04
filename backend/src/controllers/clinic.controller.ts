@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 
 import { StatusCodesEnum } from "../enums/status-codes.enum";
-import { IClinicDTO } from "../interfaces/clinic.interface";
+import { IClinicDTO, IClinicFilter } from "../interfaces/clinic.interface";
 import { clinicService } from "../services/clinic.service";
 
 class ClinicController {
@@ -34,8 +34,28 @@ class ClinicController {
         next: NextFunction,
     ) {
         try {
-            const clinics = await clinicService.getAllClinics();
+            const { sortDirection, clinicName, serviceName, doctorName } =
+                req.query as IClinicFilter;
+            const clinics = await clinicService.getAllClinics({
+                sortDirection,
+                clinicName,
+                serviceName,
+                doctorName,
+            });
             res.status(StatusCodesEnum.OK).json(clinics);
+        } catch (error) {
+            next(error);
+        }
+    }
+    public async deleteClinicById(
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ) {
+        try {
+            const { id } = req.params;
+            await clinicService.deleteClinicById(id);
+            res.status(StatusCodesEnum.NO_CONTENT).send();
         } catch (error) {
             next(error);
         }

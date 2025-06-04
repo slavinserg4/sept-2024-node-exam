@@ -1,17 +1,29 @@
 import { StatusCodesEnum } from "../enums/status-codes.enum";
 import { ApiError } from "../errors/api.error";
+import { IAuth } from "../interfaces/auth.interface";
 import {
     IDoctor,
     IDoctorDTO,
+    IDoctorFind,
     IUpdateDoctorDTO,
 } from "../interfaces/doctor.interface";
+import { ITokenPair } from "../interfaces/token.interface";
 import { doctorRepository } from "../repositories/doctor.repository";
+import { tokenRepository } from "../repositories/token.repository";
 import { clinicService } from "./clinic.service";
+import { passwordService } from "./password.service";
 import { serviceService } from "./service.service";
+import { tokenService } from "./token.service";
 
 class DoctorService {
-    public async getAllDoctors(): Promise<IDoctor[]> {
-        const doctors = await doctorRepository.getAllDoctors();
+    public async getAllDoctors(
+        sortField?: string,
+        sortDirection?: string,
+    ): Promise<IDoctor[]> {
+        const doctors = await doctorRepository.getAllDoctors(
+            sortField,
+            sortDirection,
+        );
         if (!doctors.length) {
             throw new ApiError("No doctors found", StatusCodesEnum.NOT_FOUND);
         }
@@ -39,10 +51,24 @@ class DoctorService {
             servicesArray,
             clinicIds,
         );
+        const doctorEmail = await doctorRepository.getDoctorByEmail(
+            doctor.email,
+        );
+        if (doctorEmail)
+            throw new ApiError(
+                "Doctor with this email already exists",
+                StatusCodesEnum.BED_REQUEST,
+            );
+        const hashedPassword = await passwordService.hashPassword(
+            doctor.password,
+        );
 
         const doctorToCreate = {
             firstName: doctor.firstName,
             lastName: doctor.lastName,
+            email: doctor.email,
+            phone: doctor.phone,
+            password: hashedPassword,
             clinics: clinicIds,
             services: serviceIds,
         };
@@ -74,7 +100,6 @@ class DoctorService {
             const newClinicIds =
                 await clinicService.processClinicData(clinicsToAdd);
 
-            // Додаємо нові клініки без дублювання і конвертуємо все в рядки
             const clinicIdsSet = new Set([
                 ...updatedClinics.map((clinic) =>
                     typeof clinic === "string" ? clinic : clinic._id.toString(),
@@ -99,7 +124,6 @@ class DoctorService {
                 updatedClinics as string[],
             );
 
-            // Додаємо нові сервіси без дублювання і конвертуємо все в рядки
             const serviceIdsSet = new Set([
                 ...updatedServices.map((service) =>
                     typeof service === "string"
@@ -138,6 +162,53 @@ class DoctorService {
         };
 
         return await doctorRepository.updateDoctorById(id, updateData);
+    }
+    public async signInByDoctor(
+        loginData: IAuth,
+    ): Promise<{ doctor: IDoctor; tokens: ITokenPair }> {
+        const doctor = await doctorRepository.getDoctorByEmailWithPassword(
+            loginData.email,
+        );
+        if (!doctor) {
+            throw new ApiError(
+                "Invalid email or password",
+                StatusCodesEnum.UNAUTHORIZED,
+            );
+        }
+        const isPasswordValid = await passwordService.comparePassword(
+            loginData.password,
+            doctor.password,
+        );
+        if (!isPasswordValid) {
+            throw new ApiError(
+                "Invalid email or password",
+                StatusCodesEnum.UNAUTHORIZED,
+            );
+        }
+        const tokens = tokenService.generateTokens({
+            role: doctor.role,
+            doctorId: doctor._id,
+        });
+        await tokenRepository.create({ ...tokens, _doctorId: doctor._id });
+        return { doctor, tokens };
+    }
+    public async searchDoctor(
+        searchParams: IDoctorFind,
+        sortField?: string,
+        sortDirection?: string,
+    ): Promise<IDoctor[]> {
+        const doctors = await doctorRepository.searchDoctors(
+            searchParams,
+            sortField,
+            sortDirection,
+        );
+        if (!doctors.length) {
+            throw new ApiError("No doctors found", StatusCodesEnum.NOT_FOUND);
+        }
+        return doctors;
+    }
+    public async deleteDoctorById(id: string) {
+        return await doctorRepository.deleteDoctorById(id);
     }
 }
 export const doctorService = new DoctorService();

@@ -1,3 +1,4 @@
+import { RoleEnum } from "../enums/role.enum";
 import { StatusCodesEnum } from "../enums/status-codes.enum";
 import { ApiError } from "../errors/api.error";
 import { IUser } from "../interfaces/user.interface";
@@ -15,7 +16,7 @@ class UserService {
         }
     }
     public async isUserAdmin(role: string): Promise<void> {
-        if (role !== "admin") {
+        if (role !== RoleEnum.ADMIN) {
             throw new ApiError("User is not admin", StatusCodesEnum.FORBIDDEN);
         }
     }

@@ -4,7 +4,7 @@ import { StatusCodesEnum } from "../enums/status-codes.enum";
 import { TokenTypeEnum } from "../enums/toket-type.enum";
 import { ApiError } from "../errors/api.error";
 import { IAuth } from "../interfaces/auth.interface";
-import { ITokenPair } from "../interfaces/token.interface";
+import { ITokenPair, ITokenPayload } from "../interfaces/token.interface";
 import { IUser, IUserCreateDTO } from "../interfaces/user.interface";
 import { tokenRepository } from "../repositories/token.repository";
 import { userRepository } from "../repositories/user.repository";
@@ -87,6 +87,38 @@ class AuthService {
         return await userService.updateById(userId, {
             password: hashedPassword,
         });
+    }
+    public async refresh(payload: ITokenPayload): Promise<ITokenPair> {
+        const { userId, doctorId, ...restPayload } = payload;
+
+        if (!userId && !doctorId) {
+            throw new ApiError(
+                "Invalid token payload",
+                StatusCodesEnum.UNAUTHORIZED,
+            );
+        }
+
+        const { exp, iat, ...payloadWithoutExpiry } = restPayload;
+
+        const tokens = tokenService.generateTokens({
+            ...payloadWithoutExpiry,
+            userId,
+            doctorId,
+        });
+
+        if (userId) {
+            await tokenRepository.create({
+                ...tokens,
+                _userId: userId,
+            });
+        } else if (doctorId) {
+            await tokenRepository.create({
+                ...tokens,
+                _doctorId: doctorId,
+            });
+        }
+
+        return tokens;
     }
 }
 export const authService = new AuthService();

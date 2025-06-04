@@ -25,15 +25,15 @@ class ServiceRepository {
         return baseQuery;
     }
 
-    public async getAllServices(sortDirection?: string): Promise<IService[]> {
+    public getAllServices(sortDirection?: string): Promise<IService[]> {
         return this.getBaseQuery(Service.find(), sortDirection).exec();
     }
 
-    public async getServiceById(id: string): Promise<IService> {
+    public getServiceById(id: string): Promise<IService> {
         return this.getBaseQuery(Service.findById(id)).exec();
     }
 
-    public async getServiceByName(
+    public getServiceByName(
         name: string,
         sortDirection?: string,
     ): Promise<IService[]> {
@@ -50,13 +50,13 @@ class ServiceRepository {
         return this.getBaseQuery(Service.findById(createdService._id)).exec();
     }
 
-    public async updateServiceById(
-        id: string,
-        dto: IServiceDTO,
-    ): Promise<IService> {
+    public updateServiceById(id: string, dto: IServiceDTO): Promise<IService> {
         return this.getBaseQuery(
             Service.findByIdAndUpdate(id, dto, { new: true }),
         ).exec();
+    }
+    public deleteServiceById(id: string) {
+        return this.getBaseQuery(Service.findByIdAndDelete(id));
     }
 }
 
