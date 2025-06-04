@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 
-import express, { NextFunction, Request, Response } from "express";
+import express, { Request, Response } from "express";
 import * as mongoose from "mongoose";
 
 import { config } from "./config/config";
