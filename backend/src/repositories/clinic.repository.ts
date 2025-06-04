@@ -96,14 +96,7 @@ class ClinicRepository {
     public getClinicById(id: string): Promise<IClinic> {
         return this.getBaseQuery(Clinic.findById(id)).exec();
     }
-    public getClinicsByNames(name: string, sortDirection?: string) {
-        return this.getBaseQuery(
-            Clinic.find({
-                name: { $regex: name, $options: "i" },
-            }),
-            { sortDirection },
-        ).exec();
-    }
+
     public getClinicByName(name: string): Promise<IClinic> {
         return this.getBaseQuery(
             Clinic.findOne({ name: { $regex: new RegExp(name, "i") } }),

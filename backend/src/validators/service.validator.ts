@@ -22,7 +22,6 @@ export class ServiceValidator {
         sort: this.sortDirection.optional(),
     });
 
-    // Для GET /services - валідація query
     public static getAllSchema = joi.object({
         sort: this.sortDirection.optional(),
     });

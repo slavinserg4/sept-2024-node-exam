@@ -90,7 +90,9 @@ class DoctorService {
         dto: IUpdateDoctorDTO,
     ): Promise<IDoctor> {
         const existingDoctor = await this.getDoctorById(id);
-
+        if (!existingDoctor) {
+            throw new ApiError("Doctor not found", StatusCodesEnum.NOT_FOUND);
+        }
         let updatedClinics = [...existingDoctor.clinics];
         if (dto.clinics) {
             const clinicsToAdd = Array.isArray(dto.clinics)
@@ -204,6 +206,16 @@ class DoctorService {
     public async deleteDoctorById(id: string): Promise<void> {
         await this.getDoctorById(id);
         return await doctorRepository.deleteDoctorById(id);
+    }
+    public async updateDoctorPassword(
+        id: string,
+        password: string,
+    ): Promise<IDoctor> {
+        const doctor = await doctorRepository.updatePassword(id, password);
+        if (!doctor) {
+            throw new ApiError("Doctor not found", StatusCodesEnum.NOT_FOUND);
+        }
+        return doctor;
     }
 }
 export const doctorService = new DoctorService();

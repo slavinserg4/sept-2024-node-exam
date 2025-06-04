@@ -1,3 +1,4 @@
+import { RegexEnum } from "../enums/regex.enum";
 import {
     IDoctor,
     IDoctorDTO,
@@ -65,13 +66,26 @@ class DoctorRepository {
     ): Promise<IDoctor[]> {
         const searchQuery = Object.entries(searchParams)
             .filter(([, value]) => value)
-            .reduce(
-                (acc, [key, value]) => ({
+            .reduce((acc, [key, value]) => {
+                if (key === "phone") {
+                    // Видаляємо всі спеціальні символи та пробіли для порівняння
+                    const cleanedValue = value.replace(
+                        RegexEnum.PHONE_CLEANER,
+                        "",
+                    );
+                    return {
+                        ...acc,
+                        [key]: {
+                            $regex: cleanedValue.split("").join(".*"),
+                            $options: "i",
+                        },
+                    };
+                }
+                return {
                     ...acc,
                     [key]: { $regex: value, $options: "i" },
-                }),
-                {},
-            );
+                };
+            }, {});
 
         return this.getBaseQuery(
             Doctor.find(searchQuery),
@@ -99,6 +113,14 @@ class DoctorRepository {
     }
     public deleteDoctorById(id: string) {
         return this.getBaseQuery(Doctor.findByIdAndDelete(id));
+    }
+    public async updatePassword(
+        id: string,
+        password: string,
+    ): Promise<IDoctor> {
+        return await Doctor.findByIdAndUpdate(id, { password }, { new: true })
+            .select("+password")
+            .exec();
     }
 }
 
