@@ -4,9 +4,11 @@ import { IAuth } from "../interfaces/auth.interface";
 import {
     IDoctor,
     IDoctorDTO,
+    IDoctorFilter,
     IDoctorFind,
     IUpdateDoctorDTO,
 } from "../interfaces/doctor.interface";
+import { IPaginatedResponse } from "../interfaces/paginated.response";
 import { ITokenPair } from "../interfaces/token.interface";
 import { doctorRepository } from "../repositories/doctor.repository";
 import { tokenRepository } from "../repositories/token.repository";
@@ -17,19 +19,26 @@ import { tokenService } from "./token.service";
 
 class DoctorService {
     public async getAllDoctors(
-        sortField?: string,
-        sortDirection?: string,
-    ): Promise<IDoctor[]> {
-        const doctors = await doctorRepository.getAllDoctors(
-            sortField,
-            sortDirection,
-        );
+        filter?: IDoctorFilter,
+    ): Promise<IPaginatedResponse<IDoctor>> {
+        const { doctors, total } = await doctorRepository.getAllDoctors(filter);
+
         if (!doctors.length) {
             throw new ApiError("No doctors found", StatusCodesEnum.NOT_FOUND);
         }
-        return doctors;
-    }
 
+        const page = filter?.page || 1;
+        const pageSize = filter?.pageSize || total;
+        const totalPages = Math.ceil(total / pageSize);
+
+        return {
+            data: doctors,
+            totalItems: total,
+            totalPages,
+            previousPage: page > 1,
+            nextPage: page < totalPages,
+        };
+    }
     public async getDoctorById(id: string): Promise<IDoctor> {
         const doctor = await doctorRepository.getDoctorById(id);
         if (!doctor) {

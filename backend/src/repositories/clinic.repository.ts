@@ -65,32 +65,48 @@ class ClinicRepository {
         return baseQuery;
     }
 
-    public async getAllClinics(filter?: IClinicFilter): Promise<IClinic[]> {
-        let query = Clinic.find();
+    public async getAllClinics(
+        filter?: IClinicFilter,
+    ): Promise<{ clinics: IClinic[]; total: number }> {
+        let baseQuery = Clinic.find();
 
         if (filter?.clinicName) {
-            query = query.where("name", {
+            baseQuery = baseQuery.where("name", {
                 $regex: filter.clinicName,
                 $options: "i",
             });
         }
-        let results = await this.getBaseQuery(query, filter).exec();
 
-        // Фільтрація за сервісами
-        if (filter?.serviceName) {
-            results = results.filter(
-                (clinic: IClinic) => clinic.services.length > 0,
-            );
+        const total = await Clinic.countDocuments(baseQuery.getFilter());
+
+        baseQuery = this.getBaseQuery(baseQuery, filter);
+
+        if (filter?.page && filter?.pageSize) {
+            const skip = (filter.page - 1) * filter.pageSize;
+            baseQuery = baseQuery.skip(skip).limit(filter.pageSize);
         }
 
-        // Фільтрація за лікарями
-        if (filter?.doctorName) {
-            results = results.filter(
-                (clinic: IClinic) => clinic.doctors.length > 0,
-            );
+        const results = await baseQuery.exec();
+        let filteredResults = results;
+
+        if (filter?.serviceName || filter?.doctorName) {
+            filteredResults = results.filter((clinic: IClinic) => {
+                const hasMatchingServices = filter.serviceName
+                    ? clinic.services.length > 0
+                    : true;
+
+                const hasMatchingDoctors = filter.doctorName
+                    ? clinic.doctors.length > 0
+                    : true;
+
+                return hasMatchingServices && hasMatchingDoctors;
+            });
         }
 
-        return results;
+        return {
+            clinics: filteredResults,
+            total: total,
+        };
     }
 
     public getClinicById(id: string): Promise<IClinic> {

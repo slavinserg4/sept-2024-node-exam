@@ -11,8 +11,14 @@ class ServiceController {
         next: NextFunction,
     ) {
         try {
-            const sortDirection = req.query.sort as string;
-            const services = await serviceService.getAllServices(sortDirection);
+            const { sort, page, pageSize } = req.query;
+            const pageNumber = page ? parseInt(page as string) : undefined;
+            const limit = pageSize ? parseInt(pageSize as string) : undefined;
+            const services = await serviceService.getAllServices(
+                sort as string,
+                pageNumber,
+                limit,
+            );
             res.status(StatusCodesEnum.OK).json(services);
         } catch (e) {
             next(e);
@@ -51,10 +57,12 @@ class ServiceController {
     ) {
         try {
             const sortDirection = req.query.sort as string;
-            const { name } = req.query;
+            const { name, page, pageSize } = req.query;
             const service = await serviceService.getServicesByNameOnController(
                 name as string,
                 sortDirection,
+                page ? parseInt(page as string) : undefined,
+                pageSize ? parseInt(pageSize as string) : undefined,
             );
             res.status(StatusCodesEnum.OK).json(service);
         } catch (e) {

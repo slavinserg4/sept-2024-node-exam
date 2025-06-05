@@ -2,6 +2,7 @@ import { RegexEnum } from "../enums/regex.enum";
 import {
     IDoctor,
     IDoctorDTO,
+    IDoctorFilter,
     IDoctorFind,
     IUpdateDoctorDTO,
 } from "../interfaces/doctor.interface";
@@ -44,15 +45,64 @@ class DoctorRepository {
             .exec();
     }
 
-    public getAllDoctors(
-        sortField?: string,
-        sortDirection?: string,
-    ): Promise<IDoctor[]> {
-        return this.getBaseQuery(
-            Doctor.find(),
-            sortField,
-            sortDirection,
-        ).exec();
+    public async getAllDoctors(
+        filter?: IDoctorFilter,
+    ): Promise<{ doctors: IDoctor[]; total: number }> {
+        let baseQuery = Doctor.find();
+
+        // Застосовуємо пошукові фільтри
+        if (filter) {
+            const searchQuery = Object.entries(filter)
+                .filter(
+                    ([key, value]) =>
+                        value &&
+                        ["firstName", "lastName", "phone", "email"].includes(
+                            key,
+                        ),
+                )
+                .reduce((acc, [key, value]) => {
+                    if (key === "phone") {
+                        const cleanedValue = value.replace(
+                            RegexEnum.PHONE_CLEANER,
+                            "",
+                        );
+                        return {
+                            ...acc,
+                            [key]: {
+                                $regex: cleanedValue.split("").join(".*"),
+                                $options: "i",
+                            },
+                        };
+                    }
+                    return {
+                        ...acc,
+                        [key]: { $regex: value, $options: "i" },
+                    };
+                }, {});
+
+            baseQuery = baseQuery.find(searchQuery);
+        }
+
+        // Отримуємо загальну кількість до пагінації
+        const total = await Doctor.countDocuments(baseQuery.getFilter());
+
+        // Застосовуємо сортування
+        if (filter?.sortField && filter?.sortDirection) {
+            baseQuery = baseQuery.sort({
+                [filter.sortField]: filter.sortDirection === "asc" ? 1 : -1,
+            });
+        }
+
+        // Застосовуємо пагінацію
+        if (filter?.page && filter?.pageSize) {
+            const skip = (filter.page - 1) * filter.pageSize;
+            baseQuery = baseQuery.skip(skip).limit(filter.pageSize);
+        }
+
+        // Застосовуємо базові налаштування запиту
+        const doctors = await this.getBaseQuery(baseQuery).exec();
+
+        return { doctors, total };
     }
 
     public getDoctorById(id: string): Promise<IDoctor> {

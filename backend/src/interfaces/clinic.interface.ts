@@ -18,6 +18,8 @@ export interface IClinicFilter {
     serviceName?: string;
     doctorName?: string;
     sortDirection?: string;
+    page?: number;
+    pageSize?: number;
 }
 
 export type IClinicUpdateDTO = {

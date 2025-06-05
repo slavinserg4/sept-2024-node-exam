@@ -7,6 +7,7 @@ import {
     IClinicUpdateDTO,
 } from "../interfaces/clinic.interface";
 import { IDoctor } from "../interfaces/doctor.interface";
+import { IPaginatedResponse } from "../interfaces/paginated.response";
 import { clinicRepository } from "../repositories/clinic.repository";
 
 class ClinicService {
@@ -86,12 +87,25 @@ class ClinicService {
         }
         return clinic;
     }
-    public async getAllClinics(filter?: IClinicFilter): Promise<IClinic[]> {
-        const clinics = await clinicRepository.getAllClinics(filter);
+    public async getAllClinics(
+        filter?: IClinicFilter,
+    ): Promise<IPaginatedResponse<IClinic>> {
+        const { clinics, total } = await clinicRepository.getAllClinics(filter);
+
+        const page = filter?.page || 1;
+        const pageSize = filter?.pageSize || total;
+        const totalPages = Math.ceil(total / pageSize);
+
         if (!clinics.length) {
             throw new ApiError("No clinics found", StatusCodesEnum.NOT_FOUND);
         }
-        return clinics;
+        return {
+            data: clinics,
+            totalItems: total,
+            totalPages,
+            previousPage: page > 1,
+            nextPage: page < totalPages,
+        };
     }
     public async updateClinicById(
         id: string,

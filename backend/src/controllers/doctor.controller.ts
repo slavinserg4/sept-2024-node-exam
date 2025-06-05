@@ -4,7 +4,7 @@ import { StatusCodesEnum } from "../enums/status-codes.enum";
 import { IAuth } from "../interfaces/auth.interface";
 import {
     IDoctorDTO,
-    IDoctorFind,
+    IDoctorFilter,
     IUpdateDoctorDTO,
 } from "../interfaces/doctor.interface";
 import { doctorService } from "../services/doctor.service";
@@ -16,29 +16,30 @@ class DoctorController {
         next: NextFunction,
     ) {
         try {
-            const sortField = req.query.sortField as string;
-            const sortDirection = req.query.sortDirection as string;
-            const { firstName, lastName, phone, email } =
-                req.query as IDoctorFind;
-            if (firstName || lastName || phone || email) {
-                const searchParams: IDoctorFind = {
-                    ...(firstName && { firstName: firstName as string }),
-                    ...(lastName && { lastName: lastName as string }),
-                    ...(phone && { phone: phone as string }),
-                    ...(email && { email: email as string }),
-                };
-                const doctors = await doctorService.searchDoctor(
-                    searchParams,
-                    sortField,
-                    sortDirection,
-                );
-                return res.status(StatusCodesEnum.OK).json(doctors);
-            }
-            const doctors = await doctorService.getAllDoctors(
+            const {
                 sortField,
                 sortDirection,
-            );
-            res.status(StatusCodesEnum.OK).json(doctors);
+                firstName,
+                lastName,
+                phone,
+                email,
+                page,
+                pageSize,
+            } = req.query;
+
+            const filter: IDoctorFilter = {
+                ...(firstName && { firstName: firstName as string }),
+                ...(lastName && { lastName: lastName as string }),
+                ...(phone && { phone: phone as string }),
+                ...(email && { email: email as string }),
+                sortField: sortField as string,
+                sortDirection: sortDirection as string,
+                page: page ? Number(page) : undefined,
+                pageSize: pageSize ? Number(pageSize) : undefined,
+            };
+
+            const result = await doctorService.getAllDoctors(filter);
+            res.status(StatusCodesEnum.OK).json(result);
         } catch (e) {
             next(e);
         }

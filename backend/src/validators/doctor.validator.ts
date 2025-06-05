@@ -21,6 +21,10 @@ export class DoctorValidator {
         .string()
         .valid(SortFieldEnum.FIRST_NAME, SortFieldEnum.LAST_NAME)
         .default(SortDirectionEnum.ASC);
+    private static pagination = {
+        pageSize: joi.number().min(1),
+        page: joi.number().min(1),
+    };
 
     public static createSchema = joi.object({
         firstName: this.firstName.required(),
@@ -36,6 +40,8 @@ export class DoctorValidator {
         .object({
             sortDirection: this.sortDirection.optional(),
             sortField: this.sortField.optional(),
+            pageSize: this.pagination.pageSize.optional(),
+            page: this.pagination.page.optional(),
         })
         .unknown(true);
 }

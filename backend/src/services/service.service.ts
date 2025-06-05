@@ -1,6 +1,7 @@
 import { StatusCodesEnum } from "../enums/status-codes.enum";
 import { ApiError } from "../errors/api.error";
 import { IDoctor } from "../interfaces/doctor.interface";
+import { IPaginatedResponse } from "../interfaces/paginated.response";
 import { IService, IServiceDTO } from "../interfaces/service.interface";
 import { serviceRepository } from "../repositories/service.repository";
 
@@ -73,8 +74,35 @@ class ServiceService {
         );
     }
 
-    public async getAllServices(sortDirection?: string): Promise<IService[]> {
-        return await serviceRepository.getAllServices(sortDirection);
+    public async getAllServices(
+        sortDirection?: string,
+        page?: number,
+        pageSize?: number,
+    ): Promise<IPaginatedResponse<IService>> {
+        const query = page && pageSize ? { page, pageSize } : undefined;
+
+        const { services, total: totalItems } =
+            await serviceRepository.getAllServices(query, sortDirection);
+
+        if (!query) {
+            return {
+                data: services,
+                totalItems,
+                totalPages: 1,
+                previousPage: false,
+                nextPage: false,
+            };
+        }
+
+        const totalPages = Math.ceil(totalItems / query.pageSize);
+
+        return {
+            data: services,
+            totalItems,
+            totalPages,
+            previousPage: query.page > 1,
+            nextPage: query.page < totalPages,
+        };
     }
     public async createService(service: IServiceDTO): Promise<IService> {
         const foundedService = await this.getServicesByName(service.name);
@@ -96,17 +124,49 @@ class ServiceService {
         name: string,
         sortDirection?: string,
     ): Promise<IService[]> {
-        return await serviceRepository.getServiceByName(name, sortDirection);
+        const { services } = await serviceRepository.getServiceByName(
+            name,
+            sortDirection,
+        );
+        return services;
     }
     public async getServicesByNameOnController(
         name: string,
         sortDirection?: string,
-    ): Promise<IService[]> {
-        const services = await this.getServicesByName(name, sortDirection);
+        page?: number,
+        pageSize?: number,
+    ): Promise<IPaginatedResponse<IService>> {
+        const query = page && pageSize ? { page, pageSize } : undefined;
+        const { services, total: totalItems } =
+            await serviceRepository.getServiceByName(
+                name,
+                sortDirection,
+                query,
+            );
+
         if (!services.length) {
             throw new ApiError("Service not found", StatusCodesEnum.NOT_FOUND);
         }
-        return services;
+
+        if (!query) {
+            return {
+                data: services,
+                totalItems,
+                totalPages: 1,
+                previousPage: false,
+                nextPage: false,
+            };
+        }
+
+        const totalPages = Math.ceil(totalItems / query.pageSize);
+
+        return {
+            data: services,
+            totalItems,
+            totalPages,
+            previousPage: query.page > 1,
+            nextPage: query.page < totalPages,
+        };
     }
     public async updateServiceById(
         id: string,

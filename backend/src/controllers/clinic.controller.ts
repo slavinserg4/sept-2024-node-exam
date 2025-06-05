@@ -34,13 +34,21 @@ class ClinicController {
         next: NextFunction,
     ) {
         try {
-            const { sortDirection, clinicName, serviceName, doctorName } =
-                req.query as IClinicFilter;
+            const {
+                sortDirection,
+                clinicName,
+                serviceName,
+                doctorName,
+                page,
+                pageSize,
+            } = req.query as IClinicFilter;
             const clinics = await clinicService.getAllClinics({
                 sortDirection,
                 clinicName,
                 serviceName,
                 doctorName,
+                page,
+                pageSize,
             });
             res.status(StatusCodesEnum.OK).json(clinics);
         } catch (error) {

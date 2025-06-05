@@ -33,3 +33,9 @@ export type IDoctorFind = {
     phone?: string;
     email?: string;
 };
+export interface IDoctorFilter extends IDoctorFind {
+    page?: number;
+    pageSize?: number;
+    sortField?: string;
+    sortDirection?: string;
+}
