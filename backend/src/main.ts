@@ -4,6 +4,7 @@ import express, { NextFunction, Request, Response } from "express";
 import * as mongoose from "mongoose";
 
 import { config } from "./config/config";
+import { swaggerDocument, swaggerUI } from "./config/swagger.config";
 import { cronRunner } from "./crons";
 import { ApiError } from "./errors/api.error";
 import { apiRouter } from "./routes/api.router";
@@ -11,6 +12,7 @@ import { apiRouter } from "./routes/api.router";
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use("/docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 
 app.use("/", apiRouter);
 
