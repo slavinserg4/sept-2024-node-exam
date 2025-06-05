@@ -375,7 +375,6 @@ const swaggerDocument: OpenAPIV3.Document = {
                 },
             },
         },
-
         "/clinics": {
             get: {
                 tags: ["Clinics"],
