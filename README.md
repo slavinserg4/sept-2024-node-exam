@@ -22,6 +22,13 @@ Before running the project, make sure you have:
 - Docker
 - Docker Compose
 
+
+### Types of BD
+- A database dump in zip format is attached to GitHub, unzip it and use Docker according to the instructions below.
+- There is a cloud database:
+- mongodb+srv://user:user@node-exam-bd.9spjjgr.mongodb.net/nodejs-exam-db?retryWrites=true&w=majority&appName=node-exam-bd,
+for it you need to remove env.db and in the file docker.compose delete db, and replace mongo_uri in env
+
 ## Installation and Running with Docker
 
 1. Clone the repository:
