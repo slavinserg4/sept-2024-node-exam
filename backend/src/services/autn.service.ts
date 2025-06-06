@@ -79,10 +79,9 @@ class AuthService {
                 { url: `http://localhost:3000/recovery?token=${token}` },
             );
 
-            return; // Важливо додати return тут
+            return;
         }
 
-        // Якщо знайдено користувача
         const token = tokenService.generateActionToken(
             {
                 userId: user._id,

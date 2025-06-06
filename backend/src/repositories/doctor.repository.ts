@@ -50,7 +50,6 @@ class DoctorRepository {
     ): Promise<{ doctors: IDoctor[]; total: number }> {
         let baseQuery = Doctor.find();
 
-        // Застосовуємо пошукові фільтри
         if (filter) {
             const searchQuery = Object.entries(filter)
                 .filter(
@@ -83,23 +82,19 @@ class DoctorRepository {
             baseQuery = baseQuery.find(searchQuery);
         }
 
-        // Отримуємо загальну кількість до пагінації
         const total = await Doctor.countDocuments(baseQuery.getFilter());
 
-        // Застосовуємо сортування
         if (filter?.sortField && filter?.sortDirection) {
             baseQuery = baseQuery.sort({
                 [filter.sortField]: filter.sortDirection === "asc" ? 1 : -1,
             });
         }
 
-        // Застосовуємо пагінацію
         if (filter?.page && filter?.pageSize) {
             const skip = (filter.page - 1) * filter.pageSize;
             baseQuery = baseQuery.skip(skip).limit(filter.pageSize);
         }
 
-        // Застосовуємо базові налаштування запиту
         const doctors = await this.getBaseQuery(baseQuery).exec();
 
         return { doctors, total };
@@ -118,7 +113,6 @@ class DoctorRepository {
             .filter(([, value]) => value)
             .reduce((acc, [key, value]) => {
                 if (key === "phone") {
-                    // Видаляємо всі спеціальні символи та пробіли для порівняння
                     const cleanedValue = value.replace(
                         RegexEnum.PHONE_CLEANER,
                         "",
